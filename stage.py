@@ -31,14 +31,15 @@ class stage:
         # calculate the position:
         p=self.conversion*dist*-1
         # need to check to make sure position isn't off the stage
-        if p<0 and p>self.end_of_stage:
+        if p<=0 and p>=self.end_of_stage:
             m.send(b'MA %d\r\n'%p)
-            pos=None
-            while pos!=p:
-                pos=self.get_pos(m)
-            return pos
+            #pos=None
+            #while pos!=p:
+                #pos=self.get_pos(m)
+                #time.sleep(1)
+            return True
         else:
-            return None
+            return False
     def move_rel(self,m,dist:int):
         # get the original position
         start=self.get_pos(m)
@@ -46,48 +47,53 @@ class stage:
         p=self.conversion*dist*-1
         end=start+p
         # need to check to make sure final position isn't off the stage
-        if end<0 and end>self.end_of_stage:
+        if end<=0 and end>=self.end_of_stage:
             m.send(b'MR %d\r\n'%p)
-            pos=None
-            while pos!=end:
-                pos=self.get_pos(m)
-            return pos
+            #pos=None
+            #while pos!=end:
+                #pos=self.get_pos(m)
+                #time.sleep(1)
+            return True
         else:
-            return None
+            return False
     def get_echo(self,m):
         m.send(b'PR EM\r\n')
-        m.recv(1024)
+        r=m.recv(1024)
         l=r.splitlines()
         echo=int(l[-1],10)
         return echo
     def get_maxvel(self,m):
         m.send(b'PR VM\r\n')
-        m.recv(1024)
+        r=m.recv(1024)
         l=r.splitlines()
         vel=int(l[-1],10)
         return vel
     # not sure if these set functions will work, need to check them
+    # this function also doesn't work
     def set_echo(self,m,mode):
         m.send(b'EM=%d\r\n'%mode)
-        check=get_echo(m)
+        check=self.get_echo(m)
         if check==mode:
             return True
         else:
             return None
+    # doesn't work even when sending the commands through the shell, not a function issue, permissions??
     def set_maxvel(self,m,maxv):
-        m.send(b'MV=%d\r\n'%maxv)
-        check=get_maxvel(m)
+        m.send(b'VM=%d\r\n'%maxv)
+        check=self.get_maxvel(m)
         if check==maxv:
             return True
         else:
             return None
+    # also doesn't work
     def set_pos(self,m,pos):
         m.send(b'P=%d\r\n'%pos)
-        check=get_pos(m)
+        check=self.get_pos(m)
         if check==pos:
             return True
         else:
             return None
+    # important to call every time to end the TCP connection
     def disconnect(self,m):
         m.close()
     

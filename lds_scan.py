@@ -22,6 +22,7 @@ def create_session():
     return s
 def close_session(s):
     s.close()
+    return None
 class lds_scan:
     # this class relies on an already created session object (see above)
     def start(self,s):
