@@ -1,4 +1,4 @@
-# Script to get LDS Data from Robot through serial port
+# Script/module to get LDS Data from Robot through serial port
 # Max Zvyagin
 import serial
 import time
@@ -10,27 +10,30 @@ class reading:
         self.dist=dist
         self.inten=inten
         self.error=error
+# parameter for serial port so it can be edited from the GUI
+# it's set automatically to what it was when the code was written
+serial_port='COM5'
 
-# potentially make the serial port a parameter
 def create_session():
-    # need to call this command otherwise not permitted to make serial connection
+    # need to call this command otherwise not permitted to make serial connection - only on Linux
     #subprocess.call(['sudo chmod 666 /dev/ttyACM0'],shell=True)
     #initialize the session
-    s=serial.Serial('COM5',timeout=3)
+    s=serial.Serial(serial_port,timeout=3)
     return s
 def close_session(s):
     s.close()
 class lds_scan:
-    # desired degree of reading and already created session
+    # this class relies on an already created session object (see above)
     def start(self,s):
         # starts the LDS
         s.write(b'TestMode On\r\n')
         time.sleep(1)
         s.write(b'SetLDSRotation On\r\n')
-        # how long does the LDS need to warm up?
+        # how long does the LDS need to warm up? Does this matter?
         time.sleep(5)
     def full_scan(self,s):
-        # returns a list(?) of the reading at all degrees
+        # returns a list of the reading at all degrees
+        # don't think it's worth it to convert it all to a class 
         s.reset_output_buffer()
         s.write(b'GetLDSScan\r\n')
         time.sleep(1)
@@ -44,14 +47,15 @@ class lds_scan:
         s.write(b'GetLDSScan\r\n')
         time.sleep(1)
         response=s.read(10000)
-        #response=response.decode("utf-8")
+        response=response.decode("utf-8")
         all_degs=response.splitlines()
         for i in all_degs:
             # make sure the types get matched properly here
-            print(i)
-            if i[0]==str(deg):
-                line=i.split(",")
+            # need to parse into fields to match the degree field
+            line=i.split(",")
+            if line[0]==str(deg):
                 new_read=reading(line[0],line[1],line[2],line[3])
+                #print(vars(new_read))
                 return new_read
         return None
     def stop(self,s):
@@ -59,7 +63,7 @@ class lds_scan:
         time.sleep(1)
 
 if __name__=="__main__":
-    s=serial.Serial('COM5',timeout=3)
+    s=serial.Serial(serial_port,timeout=3)
     s.write(b'TestMode On\r\n')
     time.sleep(1)
     #s.write(b'GetWifiStatus\r\n')
