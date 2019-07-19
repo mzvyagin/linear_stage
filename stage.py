@@ -48,6 +48,6 @@ class stage:
             pos=self.get_pos(m)
         print(pos)
         return pos
-
+quit
             
 
