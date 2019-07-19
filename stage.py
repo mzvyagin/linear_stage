@@ -1,4 +1,5 @@
-# module to interact with the linear stage 
+# Module to interact with the linear stage
+# Max Zvyagin
 import socket
 import time
 
@@ -7,6 +8,7 @@ class stage:
         # this is the number of steps that is equal to 1 mm
         self.conversion=conversion
         # position value for the far end of the stage
+        # this is for the 6m linear stage, change for another stage
         self.end_of_stage=conversion*-6000
         # close end of the stage position = 0
     # initializes the TCP connection
@@ -15,7 +17,7 @@ class stage:
         m.connect(("192.168.33.1",503))
         return m
     def get_pos(self,m):
-        # request and recieve position
+        # request and recieve position in motor steps, not millimeters
         m.send(b'PR P\r\n')
         r=m.recv(1024)
         # r=r.encode("utf-8")
@@ -26,6 +28,14 @@ class stage:
         pos=int(l[-1],10)
         # print(pos)
         return pos
+    def stage_pos(self,m):
+        # returns the stage position in millimeters
+        steps=self.get_pos(m)
+        if steps==0:
+            return 0.0
+        else:
+            real=steps/(self.conversion*-1)
+            return real
     # move the stage to an absolute position from home
     def move_ab(self,m,dist:int):
         # calculate the position:
@@ -68,8 +78,14 @@ class stage:
         l=r.splitlines()
         vel=int(l[-1],10)
         return vel
-    # not sure if these set functions will work, need to check them
-    # this function also doesn't work
+    def get_moving(self,m):
+        # gets the moving flag to see if stage is still moving
+        m.send(b'PR MV\r\n')
+        r=m.recv(1024)
+        l=r.splitlines()
+        moving=int(l[-1],10)
+        return moving
+    # this function doesn't work
     def set_echo(self,m,mode):
         m.send(b'EM=%d\r\n'%mode)
         check=self.get_echo(m)
