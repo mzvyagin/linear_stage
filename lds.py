@@ -36,7 +36,7 @@ class lds():
         time.sleep(3)
     def full_scan(self,s):
         # returns a list of readings 
-        response=s.read(10000)
+        response=s.reset_input_buffer()
         s.write(b'GetLDSScan\r\n')
         time.sleep(1)
         response=s.read(10000)
@@ -56,7 +56,7 @@ class lds():
         return results
     def deg_scan(self,s,deg:int):
         # returns the reading at a specified degree
-        s.reset_output_buffer()
+        s.reset_input_buffer()
         s.write(b'GetLDSScan\r\n')
         time.sleep(1)
         response=s.read(10000)
@@ -66,13 +66,14 @@ class lds():
             # make sure the types get matched properly here
             # need to parse into fields to match the degree field
             line=i.split(",")
-            if i[0]==str(deg):
+            if line[0]==str(deg):
                 distance=int(line[1],10)
                 distance=distance-self.offset
                 distance=str(distance)
                 new_read=reading(line[0],distance,line[2],line[3])
                 #print(vars(new_read))
                 return new_read
+                break
         return None
     def stop(self,s):
         s.write(b'SetLDSRotation Off\r\n')

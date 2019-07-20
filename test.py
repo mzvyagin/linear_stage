@@ -2,6 +2,7 @@
 import lds
 import stage
 import time
+import csv
 
 class test_result:
     def __init__(self,deg,dist,inten,error,act_dist):
@@ -18,13 +19,20 @@ class test:
         self.offset=offset
         # initialize stage object
         self.stage=stage.stage(self.conversion)
+        time.sleep(1)
         # initialize connection to motor (TCP)
         self.motor=self.stage.connect()
+        time.sleep(1)
         self.serial=lds.create_session()
+        time.sleep(1)
         self.laser=lds.lds(self.offset)
+        time.sleep(1)
         # start the laser spinning
         self.laser.start(self.serial)
-        self.laser.full_scan(self.serial)
+        time.sleep(1)
+        # do a full scan
+        self.serial.write(b'GetLDSScan\r\n')
+        time.sleep(1)
 
     def start_laser(self):
         self.laser.start(self.serial)
@@ -39,10 +47,20 @@ class test:
         self.serial.close()
         # close TCP connection
         self.stage.disconnect(self.motor)
+    
+    def convert_to_csv(self,results):
+        with open('test_results.csv',mode='w') as test_results:
+            results_writer=csv.writer(test_results,delimiter=',',quotechar='"')
+            for i in results:
+                results_writer.writerow(i)
+            test_results.close()
 
     # automated test
     def auto_test(self,deg,A,B,step,readings):
         # error checking
+        if deg>359 or deg<0:
+            print("Error:invalid degree parameter")
+            return None
         if A > 6000:
             print ("Error: A value is too large")
             return None
@@ -65,6 +83,7 @@ class test:
 
         # initialize list of results
         results=[]
+        results_list=[]
         count=0
         # starts at distance A
         self.stage.move_ab(self.motor,A)
@@ -83,8 +102,10 @@ class test:
                 return None
             else:
                 data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
+                data_list=[scan.deg,scan.dist,scan.inten,scan.error,p]
                 #print(vars(data))
-                results.append(vars(data))
+                results.append(data)
+                results_list.append(data_list)
         count = count+1
         # move to new distance
         while count<=num_of_ints:
@@ -104,11 +125,16 @@ class test:
                     return None
                 else:
                     data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
+                    data_list=[scan.deg,scan.dist,scan.inten,scan.error,p]
                     #print(vars(data))
-                    results.append(vars(data))
+                    results.append(data)
+                    results_list.append(data_list)
             count=count+1
         # return the results
+        self.convert_to_csv(results_list)
         return results
+
+
         
 
 
