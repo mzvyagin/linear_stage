@@ -41,12 +41,24 @@ class test:
 
     # used to close connections and stop laser     
     def quit(self):
+        # move to home
+        self.home()
         # stop the laser
         self.stop_laser()
         # close serial connection
         self.serial.close()
         # close TCP connection
         self.stage.disconnect(self.motor)
+
+
+    def home(self):
+        self.stage.move_ab(self.motor,0)
+        time.sleep(1)
+        mflag=self.stage.get_moving(self.motor)
+        # pause the program while the motor is still moving
+        while mflag != 0:
+            time.sleep(1)
+            mflag=self.stage.get_moving(self.motor)
     
     def convert_to_csv(self,results):
         with open('test_results.csv',mode='w') as test_results:
@@ -83,7 +95,7 @@ class test:
 
         # initialize list of results
         results=[]
-        results_list=[]
+        results_list=[['Degree','Laser Distance','Intensity','Error','Actual Distance']]
         count=0
         # starts at distance A
         self.stage.move_ab(self.motor,A)
