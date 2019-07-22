@@ -68,6 +68,7 @@ class test:
         self.serial.close()
         # close TCP connection
         self.stage.disconnect(self.motor)
+        return True
 
 
     def home(self):
