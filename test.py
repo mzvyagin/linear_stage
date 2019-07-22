@@ -17,6 +17,8 @@ class test:
     def __init__(self,conversion:int,offset:int):
         self.conversion=conversion
         self.offset=offset
+    
+    def system_init(self):
         # initialize stage object
         self.stage=stage.stage(self.conversion)
         time.sleep(1)
@@ -33,6 +35,8 @@ class test:
         # do a full scan
         self.serial.write(b'GetLDSScan\r\n')
         time.sleep(1)
+        return 1
+
 
     def start_laser(self):
         self.laser.start(self.serial)
