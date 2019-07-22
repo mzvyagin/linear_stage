@@ -17,6 +17,21 @@ class test:
     def __init__(self,conversion:int,offset:int):
         self.conversion=conversion
         self.offset=offset
+        self.stage=stage.stage(self.conversion)
+        time.sleep(1)
+        # initialize connection to motor (TCP)
+        self.motor=self.stage.connect()
+        time.sleep(1)
+        self.serial=lds.create_session()
+        time.sleep(1)
+        self.laser=lds.lds(self.offset)
+        time.sleep(1)
+        # start the laser spinning
+        self.laser.start(self.serial)
+        time.sleep(1)
+        # do a full scan
+        self.serial.write(b'GetLDSScan\r\n')
+        time.sleep(1)
     
     def system_init(self):
         # initialize stage object
