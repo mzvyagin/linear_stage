@@ -81,7 +81,7 @@ class test:
             mflag=self.stage.get_moving(self.motor)
     
     def convert_to_csv(self,results):
-        with open('test_results.csv',mode='w') as test_results:
+        with open('test_results.csv',mode='w',newline='') as test_results:
             results_writer=csv.writer(test_results,delimiter=',',quotechar='"')
             for i in results:
                 results_writer.writerow(i)
@@ -156,8 +156,8 @@ class test:
                     print("Error in LDS scan")
                     return None
                 else:
-                    data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
-                    data_list=[scan.deg,scan.dist,scan.inten,scan.error,p]
+                    data=test_result(scan.deg,scan.dist,scan.inten,scan.error,round(p))
+                    data_list=[scan.deg,scan.dist,scan.inten,scan.error,round(p)]
                     #print(vars(data))
                     results.append(data)
                     results_list.append(data_list)

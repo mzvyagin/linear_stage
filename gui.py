@@ -21,13 +21,13 @@ app.addButton("Start LDS Laser",lambda:test_object.start_laser())
 app.addButton("Stop LDS Laser",lambda:test_object.stop_laser())
 
 # widget to show the current position of the linear stage
-app.addLabel("Current Stage Position")
+app.addLabel("Current Stage Position","Current Stage Position")
 def update_pos():
-  pos= lambda: test_object.stage.stage_pos(test_object.motor)
-  app.setLabel("Current Stage Position",pos)
+  pos= test_object.stage.stage_pos(test_object.motor)
+  app.setLabel("Current Stage Position","Current Stage Position : "+str(pos)+" (mm)")
 
 # should update the position widget constantly
-app.registerEvent(lambda:update_pos)
+app.registerEvent(update_pos)
 
 # manual movement of the linear stage - absolute position
 app.addLabelEntry("Move to absolute position:")
@@ -35,11 +35,8 @@ app.addLabelEntry("Move to absolute position:")
 def manual_abs():
     abs_pos=app.getEntry("Move to absolute position:")
     abs_pos=int(abs_pos)
-    print(abs_pos)
     test_object.stage.move_ab(test_object.motor,abs_pos)
 app.addNamedButton("Go","absolute",lambda:manual_abs())
-
-app.addButton("Auto Test",lambda:test_object.auto_test(0,1000,100,100,1))
 
 # manual movement of the linear stage - relative position
 app.addLabelEntry("Move to relative position:")
@@ -49,6 +46,9 @@ def manual_rel():
     abs_pos=int(abs_pos)
     test_object.stage.move_rel(test_object.motor,abs_pos)
 app.addNamedButton("Go","relative",lambda:manual_rel())
+
+# auto test functions
+app.addButton("Auto Test",lambda:test_object.auto_test(0,1000,100,100,1))
 
 # sequence to quit the app
 app.setStopFunction(lambda:test_object.quit())
