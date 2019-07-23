@@ -5,6 +5,8 @@ from appJar import gui
 import test # module with functions controlling testing
 import socket
 import time
+from multiprocessing import Process
+import os
 
 conv=2556.7
 off=490
@@ -14,6 +16,9 @@ app=gui()
 app.addLabel("title","LDS Testing on Linear Stage")
 app.setLabelBg("title","green")
 #app.setStartFunction(test_object.system_init)
+
+# manual side of the interface
+app.startFrame("LEFT",row=0,column=0)
 
 # start the laser
 app.addButton("Start LDS Laser",lambda:test_object.start_laser())
@@ -50,15 +55,43 @@ app.addNamedButton("Go","relative",lambda:manual_rel())
 app.addLabel("Single Test Scan Results:")
 app.addTable("Scan Results",[["Degree","Distance","Intensity","Error"]])
 def test_scan():
+  # clear out the last trial
   app.deleteAllTableRows("Scan Results")
+  # perform the scan and parsing
   results=test_object.laser.full_scan(test_object.serial)
+  # add the results to the table
   app.addTableRows("Scan Results",results)
-  
+
 app.addButton("Test Laser Scan",lambda:test_scan())
 
-# auto test functions
-app.addButton("Auto Test",lambda:test_object.auto_test(0,1000,100,100,1))
+app.stopFrame()
 
+# automated side of the interface
+app.startFrame("RIGHT",row=0,column=1)
+
+
+# auto test functionality
+app.addLabelEntry("Desired Degree: ")
+app.addLabelEntry("Starting Distance A: ")
+app.addLabelEntry("Ending Distance B: ")
+app.addLabelEntry("Step Interval: ")
+app.addLabelEntry("Readings per Interval: ")
+def gui_auto_test():
+  d=int(app.getEntry("Desired Degree: "))
+  a=int(app.getEntry("Starting Distance A: "))
+  b=int(app.getEntry("Ending Distance B: "))
+  s=int(app.getEntry("Step Interval: "))
+  r=int(app.getEntry("Readings per Interval: "))
+  test_object.auto_test(d,a,b,s,r)
+  return
+def gui_auto_test_wrapper():
+  p=Process(target=gui_auto_test,args=())
+  p.start()
+  p.join()
+
+app.addButton("Auto Test",lambda:gui_auto_test())
+
+app.stopFrame()
 # sequence to quit the app
 app.setStopFunction(lambda:test_object.quit())
 

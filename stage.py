@@ -32,7 +32,7 @@ class stage:
         # returns the stage position in millimeters
         steps=self.get_pos(m)
         if steps==0:
-            return 0.0
+            return 0
         else:
             real=steps/(self.conversion*-1)
             return round(real)
