@@ -5,7 +5,8 @@ from appJar import gui
 import test # module with functions controlling testing
 import socket
 import time
-from multiprocessing import Process
+import threading
+import multiprocessing
 import os
 
 conv=2556.7
@@ -82,14 +83,26 @@ def gui_auto_test():
   b=int(app.getEntry("Ending Distance B: "))
   s=int(app.getEntry("Step Interval: "))
   r=int(app.getEntry("Readings per Interval: "))
-  test_object.auto_test(d,a,b,s,r)
+  t=threading.Thread(target=test_object.auto_test,args=(d,a,b,s,r,),daemon=True)
+  t.start()
+  t.join()
+  app.destroySubWindow("Auto Test Running")
   return
-def gui_auto_test_wrapper():
-  p=Process(target=gui_auto_test,args=())
-  p.start()
-  p.join()
 
-app.addButton("Auto Test",lambda:gui_auto_test())
+def auto_test_wrapper():
+  app.startSubWindow("Auto Test Running",modal=False)
+  app.addLabel("The auto test is currently running. To stop the test please close this window then exit the program.")
+  app.stopSubWindow()
+  app.showSubWindow("Auto Test Running")
+  time.sleep(1)
+  app.thread(gui_auto_test)
+  time.sleep(1)
+
+app.addButton("Auto Test",lambda:auto_test_wrapper())
+
+def open_csv():
+  os.startfile("test_results.csv")
+app.addButton("Open Most Recent Test Results",lambda:open_csv())
 
 app.stopFrame()
 # sequence to quit the app
