@@ -156,8 +156,8 @@ class test:
                     print("Error in LDS scan")
                     return None
                 else:
-                    data=test_result(scan.deg,scan.dist,scan.inten,scan.error,round(p))
-                    data_list=[scan.deg,scan.dist,scan.inten,scan.error,round(p)]
+                    data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
+                    data_list=[scan.deg,scan.dist,scan.inten,scan.error,p]
                     #print(vars(data))
                     results.append(data)
                     results_list.append(data_list)

@@ -35,7 +35,7 @@ class stage:
             return 0.0
         else:
             real=steps/(self.conversion*-1)
-            return real
+            return round(real)
     # move the stage to an absolute position from home
     def move_ab(self,m,dist:int):
         # calculate the position:

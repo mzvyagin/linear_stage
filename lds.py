@@ -48,11 +48,12 @@ class lds():
             line=i.split(",")
             if line[0]: # if not empty string
                 #print(line)
-                distance=int(line[1],10)
-                distance=distance-self.offset
-                distance=str(distance)
-                new_read=reading(line[0],distance,line[2],line[3])
-                results.append(new_read)
+                if len(line) > 1:
+                    distance=int(line[1],10)
+                    distance=distance-self.offset
+                    distance=str(distance)
+                    new_read=[line[0],distance,line[2],line[3]]
+                    results.append(new_read)
         return results
     def deg_scan(self,s,deg:int):
         # returns the reading at a specified degree

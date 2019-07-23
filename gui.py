@@ -30,22 +30,31 @@ def update_pos():
 app.registerEvent(update_pos)
 
 # manual movement of the linear stage - absolute position
-app.addLabelEntry("Move to absolute position:")
-#app.setEntryDefault("Move to absolute position:",0)
+app.addLabelEntry("Move to absolute position (mm):")
+app.setEntryDefault("Move to absolute position (mm):",0)
 def manual_abs():
-    abs_pos=app.getEntry("Move to absolute position:")
-    abs_pos=int(abs_pos)
-    test_object.stage.move_ab(test_object.motor,abs_pos)
+  abs_pos=app.getEntry("Move to absolute position (mm):")
+  abs_pos=int(abs_pos)
+  test_object.stage.move_ab(test_object.motor,abs_pos)
 app.addNamedButton("Go","absolute",lambda:manual_abs())
 
 # manual movement of the linear stage - relative position
-app.addLabelEntry("Move to relative position:")
-#app.setEntryDefault("Move to relative position:",0)
+app.addLabelEntry("Move to relative position (mm):")
+app.setEntryDefault("Move to relative position (mm):",0)
 def manual_rel():
-    abs_pos=app.getEntry("Move to relative position:")
-    abs_pos=int(abs_pos)
-    test_object.stage.move_rel(test_object.motor,abs_pos)
+  abs_pos=app.getEntry("Move to relative position (mm):")
+  abs_pos=int(abs_pos)
+  test_object.stage.move_rel(test_object.motor,abs_pos)
 app.addNamedButton("Go","relative",lambda:manual_rel())
+
+app.addLabel("Single Test Scan Results:")
+app.addTable("Scan Results",[["Degree","Distance","Intensity","Error"]])
+def test_scan():
+  app.deleteAllTableRows("Scan Results")
+  results=test_object.laser.full_scan(test_object.serial)
+  app.addTableRows("Scan Results",results)
+  
+app.addButton("Test Laser Scan",lambda:test_scan())
 
 # auto test functions
 app.addButton("Auto Test",lambda:test_object.auto_test(0,1000,100,100,1))
