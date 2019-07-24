@@ -21,7 +21,6 @@ class stage:
     def get_pos(self,m):
         # request and recieve position in motor steps, not millimeters
         m.send(b'PR P\r\n')
-        time.sleep(1)
         r=m.recv(1024)
         # r=r.encode("utf-8")
         l=r.splitlines()
@@ -71,14 +70,14 @@ class stage:
             return False
     def get_echo(self,m):
         m.send(b'PR EM\r\n')
-        time.sleep(1)
+        #time.sleep(1)
         r=m.recv(1024)
         l=r.splitlines()
         echo=int(l[-1],10)
         return echo
     def get_maxvel(self,m):
         m.send(b'PR VM\r\n')
-        time.sleep(1)
+        #time.sleep(1)
         r=m.recv(1024)
         l=r.splitlines()
         vel=int(l[-1],10)
@@ -86,7 +85,7 @@ class stage:
     def get_moving(self,m):
         # gets the moving flag to see if stage is still moving
         m.send(b'PR MV\r\n')
-        time.sleep(1)
+        #time.sleep(.3)
         r=m.recv(1024)
         l=r.splitlines()
         moving=int(l[-1],10)

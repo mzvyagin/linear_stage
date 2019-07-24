@@ -130,8 +130,8 @@ def set_flag():
   return
 
 def auto_test_wrapper():
-  app.startSubWindow("Auto Test Running",modal=False)
-  app.addLabel("The auto test is currently running. To stop the test please close this window then exit the program. Note that this will result in loss of test data.")
+  app.startSubWindow("Auto Test Running",modal=True)
+  app.addLabel("The auto test is currently running. To stop the test please hit the quit button below. Note that any collected data will be lost.")
   app.addButton("Quit Auto Test",lambda:set_flag())
   app.stopSubWindow()
   app.showSubWindow("Auto Test Running")
