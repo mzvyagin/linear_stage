@@ -91,6 +91,12 @@ app.stopFrame()
 app.startFrame("RIGHT",row=0,column=1)
 app.setPadding(15,15)
 
+stop_thread=False
+
+def set_stop_thread():
+  global stop_thread
+  stop_thread=True
+
 # auto test functionality
 app.addLabelEntry("Desired Degree: ",row=1)
 app.addLabelEntry("Starting Distance A: ",row=2)
@@ -107,8 +113,12 @@ def gui_auto_test():
   f=app.getEntry("Custom File Name: ")
   if f=="":
     f=None
-  t=threading.Thread(target=test_object.auto_test,args=(d,a,b,s,r,f,))
-  t.start()
+  test_object.auto_test(d,a,b,s,r,f)
+  global stop_thread
+  if stop_thread:
+    break
+  #t=threading.Thread(target=test_object.auto_test,args=(d,a,b,s,r,f,),daemon=True)
+  #t.start()
   #t.join()
   app.destroySubWindow("Auto Test Running")
   return
@@ -116,6 +126,7 @@ def gui_auto_test():
 def auto_test_wrapper():
   app.startSubWindow("Auto Test Running",modal=False)
   app.addLabel("The auto test is currently running. To stop the test please close this window then exit the program. Note that this will result in loss of test data.")
+  app.addButton("Quit Auto Test",lambda:set_stop_thread())
   app.stopSubWindow()
   app.showSubWindow("Auto Test Running")
   time.sleep(1)
@@ -123,6 +134,8 @@ def auto_test_wrapper():
     app.thread(gui_auto_test)
   except:
     app.destroySubWindow("Auto Test Running")
+  global stop_thread
+  stop_thread=False
   time.sleep(1)
 
 app.addButton("Auto Test",lambda:auto_test_wrapper(),row=7)
