@@ -14,7 +14,9 @@ class stage:
     # initializes the TCP connection
     def connect(self):
         m=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        m.bind
         m.connect(("192.168.33.1",503))
+        m.settimeout(3)
         return m
     def get_pos(self,m):
         # request and recieve position in motor steps, not millimeters
@@ -111,6 +113,7 @@ class stage:
             return None
     # important to call every time to end the TCP connection
     def disconnect(self,m):
+        m.shutdown('SHUT_RDWR')
         m.close()
     
             

@@ -80,15 +80,19 @@ class test:
             time.sleep(1)
             mflag=self.stage.get_moving(self.motor)
     
-    def convert_to_csv(self,results):
-        with open('test_results.csv',mode='w',newline='') as test_results:
+    def convert_to_csv(self,results,file_name):
+        if file_name==None:
+            file_name='test_results.csv'
+        else:
+            file_name=file_name+'.csv'
+        with open(file_name,mode='w',newline='') as test_results:
             results_writer=csv.writer(test_results,delimiter=',',quotechar='"')
             for i in results:
                 results_writer.writerow(i)
             test_results.close()
 
     # automated test
-    def auto_test(self,deg,A,B,step,readings):
+    def auto_test(self,deg,A,B,step,readings,file_name):
         # error checking
         if deg>359 or deg<0:
             print("Error:invalid degree parameter")
@@ -163,7 +167,7 @@ class test:
                     results_list.append(data_list)
             count=count+1
         # return the results
-        self.convert_to_csv(results_list)
+        self.convert_to_csv(results_list,file_name)
         return results
 
 
