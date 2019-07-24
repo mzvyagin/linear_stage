@@ -1,8 +1,12 @@
 # Module to run testing of the LDS on the linear stage
+
 import lds
 import stage
 import time
 import csv
+import threading
+
+e=threading.Event()
 
 class test_result:
     def __init__(self,deg,dist,inten,error,act_dist):
@@ -65,9 +69,15 @@ class test:
         # stop the laser
         self.stop_laser()
         # close serial connection
-        self.serial.close()
+        try:
+            self.serial.close()
         # close TCP connection
-        self.stage.disconnect(self.motor)
+        except:
+            pass
+        try:
+            self.stage.disconnect(self.motor)
+        except:
+            pass
         return True
 
 
@@ -122,30 +132,8 @@ class test:
         results_list=[['Degree','Laser Distance','Intensity','Error','Actual Distance']]
         count=0
         # starts at distance A
-        self.stage.move_ab(self.motor,A)
-        time.sleep(1)
-        mflag=self.stage.get_moving(self.motor)
-        # pause the program while the motor is still moving
-        while mflag != 0:
-            time.sleep(1)
-            mflag=self.stage.get_moving(self.motor)
-        p=self.stage.stage_pos(self.motor)
-        # get a reading from the lds a specified number of times
-        for i in range(0,readings):
-            scan=self.laser.deg_scan(self.serial,deg)
-            if scan==None:
-                print("Error in LDS scan")
-                return None
-            else:
-                data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
-                data_list=[scan.deg,scan.dist,scan.inten,scan.error,p]
-                #print(vars(data))
-                results.append(data)
-                results_list.append(data_list)
-        count = count+1
-        # move to new distance
-        while count<=num_of_ints:
-            self.stage.move_rel(self.motor,(step*-1))
+        if e.isSet() == False:
+            self.stage.move_ab(self.motor,A)
             time.sleep(1)
             mflag=self.stage.get_moving(self.motor)
             # pause the program while the motor is still moving
@@ -153,7 +141,10 @@ class test:
                 time.sleep(1)
                 mflag=self.stage.get_moving(self.motor)
             p=self.stage.stage_pos(self.motor)
-            # get a reading from the lds a specified number of times
+        else:
+            return
+        # get a reading from the lds a specified number of times
+        if e.isSet()==False:
             for i in range(0,readings):
                 scan=self.laser.deg_scan(self.serial,deg)
                 if scan==None:
@@ -165,7 +156,35 @@ class test:
                     #print(vars(data))
                     results.append(data)
                     results_list.append(data_list)
-            count=count+1
+            count = count+1
+        else:
+            return
+        # move to new distance
+        while count<=num_of_ints and e.isSet()==False:
+            if e.isSet()==True:
+                return
+            self.stage.move_rel(self.motor,(step*-1))
+            time.sleep(1)
+            mflag=self.stage.get_moving(self.motor)
+            # pause the program while the motor is still moving
+            while mflag != 0:
+                time.sleep(1)
+                mflag=self.stage.get_moving(self.motor)
+            p=self.stage.stage_pos(self.motor)
+            # get a reading from the lds a specified number of times
+            if e.isSet()==False:
+                for i in range(0,readings):
+                    scan=self.laser.deg_scan(self.serial,deg)
+                    if scan==None:
+                        print("Error in LDS scan")
+                        return None
+                    else:
+                        data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
+                        data_list=[scan.deg,scan.dist,scan.inten,scan.error,p]
+                        #print(vars(data))
+                        results.append(data)
+                        results_list.append(data_list)
+                count=count+1
         # return the results
         self.convert_to_csv(results_list,file_name)
         return results
