@@ -1,12 +1,14 @@
 # Module to run testing of the LDS on the linear stage
 
 import lds
+from lds import serial_port
 import stage
 import time
 import csv
 import threading
 
 e=threading.Event()
+
 
 class test_result:
     def __init__(self,deg,dist,inten,error,act_dist):
@@ -26,7 +28,7 @@ class test:
         # initialize connection to motor (TCP)
         self.motor=self.stage.connect()
         time.sleep(1)
-        self.serial=lds.create_session()
+        self.serial=lds.create_session(serial_port)
         time.sleep(1)
         self.laser=lds.lds(self.offset)
         time.sleep(1)

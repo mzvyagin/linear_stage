@@ -12,6 +12,7 @@ import threading
 from multiprocessing import Process, Pipe
 from multiprocessing.managers import BaseManager
 import os
+import ttkthemes
 
 global e
 
@@ -22,17 +23,19 @@ test_object=test.test(conv,off)
 
 # set up of the gui
 #app=gui(useTtk=True)
-app=gui()
+app=gui(useTtk=True)
 app.setLocation("CENTER")
 
 app.setTitle("LDS Testing on 6 Meter Linear Stage")
-#app.setTtkTheme("equilux")
-#app.ttkStyle.configure("TLabel",font=20)
-#app.ttkStyle.configure("TButton",font=20)
+
+app.setTtkTheme("radiance")
+app.ttkStyle.configure("TLabel",font=20)
+app.ttkStyle.configure("TButton",font=20)
 
 app.addLabel("params","Input Parameters for the System")
 app.addLabelNumericEntry("Conversion (default is 2556.7): ")
 app.addLabelNumericEntry("Offset (default is 485): ")
+app.addLabelEntry("COM Port: ")
 
 def sys_params():
   global test_object
@@ -48,6 +51,13 @@ def sys_params():
     test_object.offset=off
     test_object.laser.offset=off
     print(test_object.offset)
+  global com
+  com=app.getEntry("COM Port: ")
+  if com!=None:
+    test_object.stop_laser()
+    test_object.serial.close()
+    test_object.serial=lds.create_session(com)
+    test_object.laser.start(test_object.serial)
   
 
 app.addButton("Update Parameters",lambda:sys_params())
