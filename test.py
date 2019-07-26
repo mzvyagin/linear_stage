@@ -5,6 +5,7 @@ from lds import serial_port
 import stage
 import time
 import csv
+from openpyxl import Workbook
 import threading
 
 lds_reads=[]
@@ -12,6 +13,13 @@ stage_reads=[]
 
 e=threading.Event()
 
+class trial_counter():
+    def __init__(self,num):
+        self.num=num
+
+global z_run
+# used to create a pointer
+z_run=trial_counter(0)
 
 class test_result:
     def __init__(self,deg,dist,inten,error,act_dist):
@@ -112,114 +120,130 @@ class test:
             test_results.close()
 
     # automated test
-    def auto_test(self,deg,A,B,step,readings,file_name):
+    def auto_test(self,deg,A,B,step,readings,runs,file_name):
         global latest_lds_read
         global latest_stage_read
         global lds_reads
         global stage_reads
+        global z_run
         #lds_reads=[]
         #stage_reads=[]
         # error checking
         if deg>359 or deg<0:
             print("Error:invalid degree parameter")
             return None
-        if A > 6000:
-            print ("Error: A value is too large")
+        if A < 0:
+            print ("Error: A value is too small")
             return None
-        if B < 0:
-            print("Error: B value is too small")
-        if step<=0 or step>6000:
+        if B > 5975:
+            print("Error: B value is too large")
+        if step<=0 or step>5975:
             print("Error: invalid step value")
             return None
-        if A < B:
-            print("Error: A is smaller than B")
+        if B < A:
+            print("Error: B is smaller than A")
             return None
         if readings<1:
             print("Invalid number of readings at each interval")
             return None
-        num_of_ints=(A-B)/step
+        if runs<1:
+            print("Invalid number of runs")
+            return None
+        num_of_ints=(B-A)/step
         # check this one
         if num_of_ints.is_integer() is not True:
             print("Error: interval doesn't give an equal spacing")
             return None
 
-        # initialize list of results
-        # used for a list of test_result class
-        # results=[]
-        # used for a string of results
-        results_list=[['Degree','Laser Distance','Intensity','Error','Actual Distance']]
-        count=0
-        # starts at distance A
-        if e.isSet() == False:
-            self.stage.move_ab(self.motor,A)
-            time.sleep(1)
-            mflag=self.stage.get_moving(self.motor)
-            # pause the program while the motor is still moving
-            while mflag != 0:
+        # counter for number of runs
+        
+        z_run.num=1
+        while z_run.num<=runs:
+            # initialize list of results
+            # used for a list of test_result class
+            # results=[]
+            # used for a string of results
+            lds_reads.clear()
+            stage_reads.clear()
+            results_list=[['Actual Distance','Laser Distance','Degree','Intensity','Error',]]
+            count=0
+            # starts at distance A
+            if e.isSet() == False:
+                self.stage.move_ab(self.motor,A)
                 time.sleep(1)
                 mflag=self.stage.get_moving(self.motor)
-            p=self.stage.stage_pos(self.motor)
-        else:
-            return
-        # get a reading from the lds a specified number of times
-        if e.isSet()==False:
-            for i in range(0,readings):
-                scan=self.laser.deg_scan(self.serial,deg)
-                if scan==None:
-                    print("Error in LDS scan")
-                    return None
-                else:
-                    #data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
-                    data_list=[scan.deg,scan.dist,scan.inten,scan.error,p]
-                    latest_lds_read=str(scan.dist)
-                    latest_stage_read=str(p)
-                    lds_reads.append(float(scan.dist))
-                    stage_reads.append(float(p))
-                    #print(vars(data))
-                    #results.append(data)
-                    results_list.append(data_list)
-            count = count+1
-        else:
-            return
-        # move to new distance
-        while count<=num_of_ints and e.isSet()==False:
-            if e.isSet()==True:
+                # pause the program while the motor is still moving
+                while mflag != 0:
+                    time.sleep(1)
+                    mflag=self.stage.get_moving(self.motor)
+                p=self.stage.stage_pos(self.motor)
+            else:
                 return
-            self.stage.move_rel(self.motor,(step*-1))
-            time.sleep(1)
-            mflag=self.stage.get_moving(self.motor)
-            # pause the program while the motor is still moving
-            while mflag != 0:
-                time.sleep(1)
-                mflag=self.stage.get_moving(self.motor)
-            p=self.stage.stage_pos(self.motor)
             # get a reading from the lds a specified number of times
             if e.isSet()==False:
                 for i in range(0,readings):
-                    if e.isSet()==False:
-                        scan=self.laser.deg_scan(self.serial,deg)
-                        if scan==None:
-                            print("Error in LDS scan")
-                            return None
-                        else:
-                            #data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
-                            data_list=[scan.deg,scan.dist,scan.inten,scan.error,p]
-                            latest_lds_read=str(scan.dist)
-                            latest_stage_read=str(p)
-                            #print(latest_lds_read)
-                            #print(latest_stage_read)
-                            lds_reads.append(float(scan.dist))
-                            stage_reads.append(float(p))
-                            #results.append(data)
-                            results_list.append(data_list)
+                    scan=self.laser.deg_scan(self.serial,deg)
+                    if scan==None:
+                        print("Error in LDS scan")
+                        return None
                     else:
-                        return
-                count=count+1
+                        #data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
+                        data_list=[p,scan.dist,scan.deg,scan.inten,scan.error]
+                        latest_lds_read=str(scan.dist)
+                        latest_stage_read=str(p)
+                        lds_reads.append(float(scan.dist))
+                        stage_reads.append(float(p))
+                        #print(vars(data))
+                        #results.append(data)
+                        results_list.append(data_list)
+                count = count+1
             else:
                 return
-        # return the results
-        self.convert_to_csv(results_list,file_name)
-        #return results
+            # move to new distance
+            while count<=num_of_ints and e.isSet()==False:
+                if e.isSet()==True:
+                    return
+                self.stage.move_rel(self.motor,step)
+                time.sleep(1)
+                mflag=self.stage.get_moving(self.motor)
+                # pause the program while the motor is still moving
+                while mflag != 0:
+                    time.sleep(1)
+                    mflag=self.stage.get_moving(self.motor)
+                p=self.stage.stage_pos(self.motor)
+                # get a reading from the lds a specified number of times
+                if e.isSet()==False:
+                    for i in range(0,readings):
+                        if e.isSet()==False:
+                            scan=self.laser.deg_scan(self.serial,deg)
+                            if scan==None:
+                                print("Error in LDS scan")
+                                return None
+                            else:
+                                #data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
+                                data_list=[p,scan.dist,scan.deg,scan.inten,scan.error]
+                                latest_lds_read=str(scan.dist)
+                                latest_stage_read=str(p)
+                                #print(latest_lds_read)
+                                #print(latest_stage_read)
+                                lds_reads.append(float(scan.dist))
+                                stage_reads.append(float(p))
+                                #results.append(data)
+                                results_list.append(data_list)
+                        else:
+                            return
+                    count=count+1
+                else:
+                    return
+            # return the results
+            name=file_name+'_trial'+str(z_run.num)
+            self.convert_to_csv(results_list,name)
+            #return results
+
+            z_run.num=z_run.num+1
+        
+        # reset the counter at the end of the trials
+        z_run.num=0
 
 
         

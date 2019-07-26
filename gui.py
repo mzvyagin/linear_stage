@@ -3,7 +3,7 @@
 
 from appJar import gui
 import test # module with functions controlling testing
-from test import e, lds_reads, stage_reads
+from test import e, lds_reads, stage_reads, z_run
 import stage
 import lds
 import socket
@@ -23,6 +23,8 @@ off=485
 test_object=test.test(conv,off)
 
 global most_recent_test
+global total_runs
+total_runs=0
 
 # set up of the gui
 # if not using ttk themes, just use app=gui()
@@ -138,28 +140,27 @@ app.addLabelEntry("Ending Distance B: ",row=3)
 app.addLabelEntry("Step Interval: ",row=4)
 app.addLabelEntry("Readings per Interval: ",row=5)
 app.addLabelEntry("Custom File Name: ",row=6)
+app.addLabelEntry("Number of Runs: ",row=7)
 def gui_auto_test():
   global test_object
   global most_recent_test
-  global lds_reads
-  global stage_reads
-  lds_reads.clear()
-  stage_reads.clear()
   d=int(app.getEntry("Desired Degree: "))
   a=int(app.getEntry("Starting Distance A: "))
   b=int(app.getEntry("Ending Distance B: "))
   s=int(app.getEntry("Step Interval: "))
   r=int(app.getEntry("Readings per Interval: "))
+  rs=int(app.getEntry("Number of Runs: "))
+  global total_runs
+  total_runs=rs
   f=app.getEntry("Custom File Name: ")
-  most_recent_test=f+'.csv'
+  
+  most_recent_test=f
   if f=="":
     f=None
-    most_recent_test='test_results.csv'
-  #test_object.auto_test(d,a,b,s,r,f)
-  t=threading.Thread(target=test_object.auto_test,args=(d,a,b,s,r,f,),daemon=True)
+    most_recent_test='test_results'
+  t=threading.Thread(target=test_object.auto_test,args=(d,a,b,s,r,rs,f,),daemon=True)
   t.start()
   t.join()
-  #app.thread(test_object.auto_test,d,a,b,s,r,f)
   app.destroySubWindow("Auto Test Running")
   e.clear()
   return
@@ -183,15 +184,35 @@ def auto_test_wrapper():
     app.destroySubWindow("Auto Test Running")
   time.sleep(1)
 
-app.addButton("Auto Test",lambda:auto_test_wrapper(),row=7)
+app.addButton("Auto Test",lambda:auto_test_wrapper(),row=8)
 
-# this could theoretically be altered to open any file in the folder
+def set_white_values():
+  app.setEntry("Desired Degree: ","0")
+  app.setEntry("Starting Distance A: ","0")
+  app.setEntry("Ending Distance B: ","5975")
+  app.setEntry("Step Interval: ","25")
+  app.setEntry("Readings per Interval: ","1")
+  app.setEntry("Custom File Name: ","whitecard")
+  app.setEntry("Number of Runs: ","1")
 
+def set_grey_values():
+  app.setEntry("Desired Degree: ","0")
+  app.setEntry("Starting Distance A: ","0")
+  app.setEntry("Ending Distance B: ","3000")
+  app.setEntry("Step Interval: ","25")
+  app.setEntry("Readings per Interval: ","1")
+  app.setEntry("Custom File Name: ","greycard")
+  app.setEntry("Number of Runs: ","1")
+
+app.addButton("White Card Test",lambda:set_white_values(),row=9)
+app.addButton("Grey Card Test",lambda:set_grey_values(),row=10)
+
+# this could theoretically be altered to open any file in the folder using an entry field, probably not necessary for the time being?
 def open_csv():
   global most_recent_test
   os.startfile(most_recent_test)
 
-app.addButton("Open Most Recent Test Results",lambda:open_csv(),row=8)
+app.addButton("Open Most Recent Test Results",lambda:open_csv(),row=11)
 app.stopFrame()
 app.startFrame("RIGHT",row=0,column=2)
 
@@ -222,8 +243,14 @@ def latest_lds():
   except:
     pass
 
+app.addLabel("Current Run Number : ",row=3,column=0)
+def latest_run():
+  global z_run
+  global total_runs
+  app.setLabel("Current Run Number : ","Current Run Number : "+str(z_run.num)+" out of "+str(total_runs))
 
-axes=app.addPlot("Results",stage_reads,lds_reads,row=3,column=0)
+
+axes=app.addPlot("Results",stage_reads,lds_reads,row=4,column=0)
 axes.set_xlabel("Actual Distance (mm)")
 axes.set_ylabel("Reported Distance (mm)")
 
@@ -237,6 +264,7 @@ app.registerEvent(update_pos)
 app.registerEvent(latest_lds)
 app.registerEvent(latest_stage)
 app.registerEvent(update_plot)
+app.registerEvent(latest_run)
 
 app.stopFrame()
 # sequence to quit the app

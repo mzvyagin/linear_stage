@@ -14,14 +14,18 @@ class stage:
     # initializes the TCP connection
     def connect(self):
         m=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        m.bind
         m.connect(("192.168.33.1",503))
         m.settimeout(3)
         return m
     def get_pos(self,m):
         # request and recieve position in motor steps, not millimeters
         m.send(b'PR P\r\n')
-        r=m.recv(1024)
+        try:
+            r=m.recv(1024)
+        except:
+            print("pos exception")
+            time.sleep(.3)
+            r=m.recv(1024)
         # r=r.encode("utf-8")
         l=r.splitlines()
         # return the last line of the response (in case there's other things in buffer)
@@ -85,8 +89,12 @@ class stage:
     def get_moving(self,m):
         # gets the moving flag to see if stage is still moving
         m.send(b'PR MV\r\n')
-        #time.sleep(.3)
-        r=m.recv(1024)
+        try:
+            r=m.recv(1024)
+        except:
+            print("moving exception")
+            time.sleep(.3)
+            r=m.recv(1024)
         l=r.splitlines()
         moving=int(l[-1],10)
         return moving
