@@ -51,7 +51,10 @@ class lds():
                 #print(line)
                 if len(line) > 1:
                     distance=int(line[1],10)
-                    distance=distance-self.offset
+                    if distance==0:
+                        distance==0
+                    else:
+                        distance=distance-self.offset
                     distance=str(distance)
                     new_read=[line[0],distance,line[2],line[3]]
                     results.append(new_read)
@@ -70,7 +73,10 @@ class lds():
             line=i.split(",")
             if line[0]==str(deg):
                 distance=int(line[1],10)
-                distance=distance-self.offset
+                if distance==0:
+                    distance==0
+                else:
+                    distance=distance-self.offset
                 distance=str(distance)
                 new_read=reading(line[0],distance,line[2],line[3])
                 #print(vars(new_read))

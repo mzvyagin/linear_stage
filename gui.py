@@ -28,6 +28,8 @@ global most_recent_test
 # if not using ttk themes, just use app=gui()
 app=gui(useTtk=True)
 app.setLocation("CENTER")
+app.setStretch("both")
+app.setSticky("nesw")
 
 app.setTitle("LDS Testing on 6 Meter Linear Stage")
 
@@ -109,10 +111,18 @@ def test_scan():
 
 app.addButton("Test Laser Scan",lambda:test_scan())
 
+app.startSubWindow("Robot Version Info")
+app.setStretch("both")
+app.setSticky("nesw")
+app.addScrolledTextArea("Version",colspan=10,rowspan=10)
+app.stopSubWindow()
+bot=test_object.get_bot_info()
+app.setTextArea("Version",bot)
+app.hideSubWindow("Robot Version Info")
+
 # a button used to get a pop-up with all of the version information for the robot
 def print_bot_info():
-  bot=test_object.get_bot_info()
-  app.infoBox('Bot Version Info',bot,parent=None)
+  app.showSubWindow("Robot Version Info")
 app.addButton("Get Robot Version Info",lambda:print_bot_info())
 
 app.stopFrame()

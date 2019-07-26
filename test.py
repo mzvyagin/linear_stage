@@ -173,8 +173,8 @@ class test:
                     data_list=[scan.deg,scan.dist,scan.inten,scan.error,p]
                     latest_lds_read=str(scan.dist)
                     latest_stage_read=str(p)
-                    lds_reads.append(int(scan.dist))
-                    stage_reads.append(int(p))
+                    lds_reads.append(float(scan.dist))
+                    stage_reads.append(float(p))
                     #print(vars(data))
                     #results.append(data)
                     results_list.append(data_list)
@@ -208,8 +208,8 @@ class test:
                             latest_stage_read=str(p)
                             #print(latest_lds_read)
                             #print(latest_stage_read)
-                            lds_reads.append(int(scan.dist))
-                            stage_reads.append(int(p))
+                            lds_reads.append(float(scan.dist))
+                            stage_reads.append(float(p))
                             #results.append(data)
                             results_list.append(data_list)
                     else:
