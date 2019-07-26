@@ -3,7 +3,7 @@
 
 from appJar import gui
 import test # module with functions controlling testing
-from test import e
+from test import e, lds_reads, stage_reads
 import stage
 import lds
 import socket
@@ -15,20 +15,24 @@ import os
 import ttkthemes
 
 global e
+global lds_reads
+global stage_reads
 
 conv=2556.7
 off=485
 test_object=test.test(conv,off)
 
+global most_recent_test
 
 # set up of the gui
-#app=gui(useTtk=True)
+# if not using ttk themes, just use app=gui()
 app=gui(useTtk=True)
 app.setLocation("CENTER")
 
 app.setTitle("LDS Testing on 6 Meter Linear Stage")
 
-app.setTtkTheme("radiance")
+# this theme can be configured using any of the options found on the site, entirely optional, comment out if desired
+app.setTtkTheme("arc")
 app.ttkStyle.configure("TLabel",font=20)
 app.ttkStyle.configure("TButton",font=20)
 
@@ -41,19 +45,23 @@ def sys_params():
   global test_object
   global conv
   conv=app.getEntry("Conversion (default is 2556.7): ")
+  # None is used here because this is numeric entry
   if conv!=None:
     test_object.conversion=conv
     test_object.stage.conversion=conv
-    print(test_object.conversion)
+    #print(test_object.conversion)
   global off
   off=app.getEntry("Offset (default is 485): ")
+  # None is used here because this is numeric entry
   if off!=None:
     test_object.offset=off
     test_object.laser.offset=off
-    print(test_object.offset)
+    #print(test_object.offset)
   global com
   com=app.getEntry("COM Port: ")
-  if com!=None:
+  # "" is used here because this is a general entry
+  if com!="":
+    print("COM Changed")
     test_object.stop_laser()
     test_object.serial.close()
     test_object.serial=lds.create_session(com)
@@ -101,29 +109,42 @@ def test_scan():
 
 app.addButton("Test Laser Scan",lambda:test_scan())
 
+# a button used to get a pop-up with all of the version information for the robot
+def print_bot_info():
+  bot=test_object.get_bot_info()
+  app.infoBox('Bot Version Info',bot,parent=None)
+app.addButton("Get Robot Version Info",lambda:print_bot_info())
+
 app.stopFrame()
 
 # automated side of the interface
-app.startFrame("RIGHT",row=0,column=1)
+app.startFrame("CENTER",row=0,column=1)
 app.setPadding(15,15)
 
 # auto test functionality
 app.addLabelEntry("Desired Degree: ",row=1)
-app.addLabelEntry("Starting Distance A: ",row=2)
+app.addLabelEntry("Starting Distance A: ",row=2,rowspan=1)
 app.addLabelEntry("Ending Distance B: ",row=3)
 app.addLabelEntry("Step Interval: ",row=4)
 app.addLabelEntry("Readings per Interval: ",row=5)
 app.addLabelEntry("Custom File Name: ",row=6)
 def gui_auto_test():
   global test_object
+  global most_recent_test
+  global lds_reads
+  global stage_reads
+  lds_reads.clear()
+  stage_reads.clear()
   d=int(app.getEntry("Desired Degree: "))
   a=int(app.getEntry("Starting Distance A: "))
   b=int(app.getEntry("Ending Distance B: "))
   s=int(app.getEntry("Step Interval: "))
   r=int(app.getEntry("Readings per Interval: "))
   f=app.getEntry("Custom File Name: ")
+  most_recent_test=f+'.csv'
   if f=="":
     f=None
+    most_recent_test='test_results.csv'
   #test_object.auto_test(d,a,b,s,r,f)
   t=threading.Thread(target=test_object.auto_test,args=(d,a,b,s,r,f,),daemon=True)
   t.start()
@@ -141,7 +162,7 @@ def set_flag():
 
 def auto_test_wrapper():
   app.startSubWindow("Auto Test Running",modal=True)
-  app.addLabel("The auto test is currently running. To stop the test please hit the quit button below. Note that any collected data will be lost.")
+  app.addLabel("The auto test is currently running. To stop the test please hit the quit button below. Note that any collected data may be lost.")
   app.addButton("Quit Auto Test",lambda:set_flag())
   app.stopSubWindow()
   app.showSubWindow("Auto Test Running")
@@ -154,15 +175,15 @@ def auto_test_wrapper():
 
 app.addButton("Auto Test",lambda:auto_test_wrapper(),row=7)
 
+# this could theoretically be altered to open any file in the folder
+
 def open_csv():
-  most_recent_test=app.getEntry("Custom File Name: ")
-  if most_recent_test=='':
-    most_recent_test='test_results.csv'
-  else:
-    most_recent_test=most_recent_test+'.csv'
+  global most_recent_test
   os.startfile(most_recent_test)
 
 app.addButton("Open Most Recent Test Results",lambda:open_csv(),row=8)
+app.stopFrame()
+app.startFrame("RIGHT",row=0,column=2)
 
 # widget to show the current position of the linear stage
 app.addLabel("Current Stage Position","Current Stage Position",row=0,column=0)
@@ -173,8 +194,39 @@ def update_pos():
   except:
     pass
 
-# should update the position widget constantly
+
+app.addLabel("Latest Stage Reading : ","Latest Stage Reading : ",row=1,column=0)
+def latest_stage():
+  try:
+    latest_stage_read=stage_reads[-1]
+    #print(latest_stage_read)
+    app.setLabel("Latest Stage Reading : ", "Latest Stage Reading : "+str(latest_stage_read)+" (mm)")
+  except:
+    pass
+app.addLabel("Latest LDS Reading : ","Latest LDS Reading : ",row=2,column=0)
+def latest_lds():
+  try:
+    latest_lds_read=lds_reads[-1]
+    #print(latest_lds_read)
+    app.setLabel("Latest LDS Reading : ","Latest LDS Reading : "+str(latest_lds_read)+" (mm)")
+  except:
+    pass
+
+
+axes=app.addPlot("Results",stage_reads,lds_reads,row=3,column=0)
+axes.set_xlabel("Actual Distance (mm)")
+axes.set_ylabel("Reported Distance (mm)")
+
+def update_plot():
+  app.updatePlot("Results",stage_reads,lds_reads,keepLabels=True)
+  app.refreshPlot("Results")
+
+
+# functions which the GUI runs all the time (to update values and plot)
 app.registerEvent(update_pos)
+app.registerEvent(latest_lds)
+app.registerEvent(latest_stage)
+app.registerEvent(update_plot)
 
 app.stopFrame()
 # sequence to quit the app

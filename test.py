@@ -7,6 +7,9 @@ import time
 import csv
 import threading
 
+lds_reads=[]
+stage_reads=[]
+
 e=threading.Event()
 
 
@@ -64,6 +67,11 @@ class test:
     def stop_laser(self):
         self.laser.stop(self.serial)
 
+    # used to obtain all of the version information from the bot (serial command)
+    def get_bot_info(self):
+        r=self.laser.bot_info(self.serial)
+        return r
+
     # used to close connections and stop laser     
     def quit(self):
         # move to home
@@ -105,6 +113,12 @@ class test:
 
     # automated test
     def auto_test(self,deg,A,B,step,readings,file_name):
+        global latest_lds_read
+        global latest_stage_read
+        global lds_reads
+        global stage_reads
+        #lds_reads=[]
+        #stage_reads=[]
         # error checking
         if deg>359 or deg<0:
             print("Error:invalid degree parameter")
@@ -130,7 +144,9 @@ class test:
             return None
 
         # initialize list of results
-        results=[]
+        # used for a list of test_result class
+        # results=[]
+        # used for a string of results
         results_list=[['Degree','Laser Distance','Intensity','Error','Actual Distance']]
         count=0
         # starts at distance A
@@ -153,10 +169,14 @@ class test:
                     print("Error in LDS scan")
                     return None
                 else:
-                    data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
+                    #data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
                     data_list=[scan.deg,scan.dist,scan.inten,scan.error,p]
+                    latest_lds_read=str(scan.dist)
+                    latest_stage_read=str(p)
+                    lds_reads.append(int(scan.dist))
+                    stage_reads.append(int(p))
                     #print(vars(data))
-                    results.append(data)
+                    #results.append(data)
                     results_list.append(data_list)
             count = count+1
         else:
@@ -176,20 +196,30 @@ class test:
             # get a reading from the lds a specified number of times
             if e.isSet()==False:
                 for i in range(0,readings):
-                    scan=self.laser.deg_scan(self.serial,deg)
-                    if scan==None:
-                        print("Error in LDS scan")
-                        return None
+                    if e.isSet()==False:
+                        scan=self.laser.deg_scan(self.serial,deg)
+                        if scan==None:
+                            print("Error in LDS scan")
+                            return None
+                        else:
+                            #data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
+                            data_list=[scan.deg,scan.dist,scan.inten,scan.error,p]
+                            latest_lds_read=str(scan.dist)
+                            latest_stage_read=str(p)
+                            #print(latest_lds_read)
+                            #print(latest_stage_read)
+                            lds_reads.append(int(scan.dist))
+                            stage_reads.append(int(p))
+                            #results.append(data)
+                            results_list.append(data_list)
                     else:
-                        data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
-                        data_list=[scan.deg,scan.dist,scan.inten,scan.error,p]
-                        #print(vars(data))
-                        results.append(data)
-                        results_list.append(data_list)
+                        return
                 count=count+1
+            else:
+                return
         # return the results
         self.convert_to_csv(results_list,file_name)
-        return results
+        #return results
 
 
         

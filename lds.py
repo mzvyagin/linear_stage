@@ -75,11 +75,19 @@ class lds():
                 new_read=reading(line[0],distance,line[2],line[3])
                 #print(vars(new_read))
                 return new_read
-                break
         return None
     def stop(self,s):
         s.write(b'SetLDSRotation Off\r\n')
         time.sleep(1)
+
+    # Returns 
+    def bot_info(self,s):
+        s.reset_input_buffer()
+        s.write(b'GetVersion\r\n')
+        time.sleep(1)
+        response=s.read(10000)
+        response=response.decode("utf-8")
+        return response
 
 if __name__=="__main__":
     s=serial.Serial(serial_port,timeout=3)
