@@ -118,6 +118,7 @@ app.setStretch("both")
 app.setSticky("nesw")
 app.addScrolledTextArea("Version",colspan=10,rowspan=10)
 app.stopSubWindow()
+global bot
 bot=test_object.get_bot_info()
 app.setTextArea("Version",bot)
 app.hideSubWindow("Robot Version Info")

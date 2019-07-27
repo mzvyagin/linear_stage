@@ -56,7 +56,7 @@ class lds():
                     else:
                         distance=distance-self.offset
                     distance=str(distance)
-                    new_read=[line[0],distance,line[2],line[3]]
+                    new_read=[int(line[0]),int(distance),int(line[2]),int(line[3])]
                     results.append(new_read)
         return results
     def deg_scan(self,s,deg:int):
@@ -77,7 +77,6 @@ class lds():
                     distance==0
                 else:
                     distance=distance-self.offset
-                distance=str(distance)
                 new_read=reading(line[0],distance,line[2],line[3])
                 #print(vars(new_read))
                 return new_read

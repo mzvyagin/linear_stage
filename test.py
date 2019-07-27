@@ -107,7 +107,27 @@ class test:
         while mflag != 0:
             time.sleep(1)
             mflag=self.stage.get_moving(self.motor)
+
+    def convert_to_excel(self,results,file_name):
+        wb=Workbook()
+        j=1
+        for i in results:
+            ws=wb.create_sheet("Trial "+str(j))
+            for x in i:
+                ws.append(x)
+            ws.append([])
+            ws.append([])
+            # remove any non unicode characters
+            bot_ver=self.get_bot_info()
+            #print(bot_ver)
+            ws.append([bot_ver])
+            j=j+1
+        if file_name==None:
+            file_name='test_results'
+        name=file_name+'.xlsx'
+        wb.save(filename=name)   
     
+    # this has been deprecated, now using excel to output the data 
     def convert_to_csv(self,results,file_name):
         if file_name==None:
             file_name='test_results.csv'
@@ -156,7 +176,7 @@ class test:
             return None
 
         # counter for number of runs
-        
+        full_results=[]
         z_run.num=1
         while z_run.num<=runs:
             # initialize list of results
@@ -235,15 +255,18 @@ class test:
                     count=count+1
                 else:
                     return
+            
             # return the results
-            name=file_name+'_trial'+str(z_run.num)
-            self.convert_to_csv(results_list,name)
+            #name=file_name+'_trial'+str(z_run.num)
+            #self.convert_to_csv(results_list,name)
             #return results
 
             z_run.num=z_run.num+1
-        
+            full_results.append(results_list)
+       
         # reset the counter at the end of the trials
         z_run.num=0
+        self.convert_to_excel(full_results,file_name)
 
 
         
