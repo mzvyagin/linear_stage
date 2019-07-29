@@ -49,7 +49,7 @@ class lds():
         for i in all_degs:
             line=i.split(",")
             if line[0] != '' and line[0]>='0' and line[0]<='359': # if not empty string
-                print(line)
+                # print(line)
                 if len(line) > 1:
                     distance=int(line[1],10)
                     if distance==0:
