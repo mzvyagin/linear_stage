@@ -23,7 +23,7 @@ class stage:
         try:
             r=m.recv(1024)
         except:
-            print("pos exception")
+            # print("pos exception")
             time.sleep(.3)
             r=m.recv(1024)
         # r=r.encode("utf-8")
@@ -92,7 +92,7 @@ class stage:
         try:
             r=m.recv(1024)
         except:
-            print("moving exception")
+            # print("moving exception")
             time.sleep(.3)
             r=m.recv(1024)
         l=r.splitlines()

@@ -111,16 +111,20 @@ class test:
     def convert_to_excel(self,results,file_name):
         wb=Workbook()
         j=1
+        bot_ver=self.get_bot_info()
+        p=''
+        for i in bot_ver:
+            if i.isprintable():
+                p=p+i
+        p=p.split(",")
+        for x in p:
+            wb.active.append([x])
         for i in results:
             ws=wb.create_sheet("Trial "+str(j))
             for x in i:
                 ws.append(x)
             ws.append([])
             ws.append([])
-            # remove any non unicode characters
-            bot_ver=self.get_bot_info()
-            #print(bot_ver)
-            ws.append([bot_ver])
             j=j+1
         if file_name==None:
             file_name='test_results'
@@ -185,7 +189,7 @@ class test:
             # used for a string of results
             lds_reads.clear()
             stage_reads.clear()
-            results_list=[['Actual Distance','Laser Distance','Degree','Intensity','Error',]]
+            results_list=[['Degree','Actual Distance','Laser Distance','Intensity','Error',]]
             count=0
             # starts at distance A
             if e.isSet() == False:
@@ -208,7 +212,7 @@ class test:
                         return None
                     else:
                         #data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
-                        data_list=[p,scan.dist,scan.deg,scan.inten,scan.error]
+                        data_list=[scan.deg,p,scan.dist,scan.inten,scan.error]
                         latest_lds_read=str(scan.dist)
                         latest_stage_read=str(p)
                         lds_reads.append(float(scan.dist))
@@ -241,7 +245,7 @@ class test:
                                 return None
                             else:
                                 #data=test_result(scan.deg,scan.dist,scan.inten,scan.error,p)
-                                data_list=[p,scan.dist,scan.deg,scan.inten,scan.error]
+                                data_list=[scan.deg,p,scan.dist,scan.inten,scan.error]
                                 latest_lds_read=str(scan.dist)
                                 latest_stage_read=str(p)
                                 #print(latest_lds_read)

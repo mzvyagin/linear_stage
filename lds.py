@@ -44,10 +44,38 @@ class lds():
         response=response.decode("utf-8")
         results=[]
         all_degs=response.splitlines()
-        all_degs=all_degs[2:363]
+        # print(all_degs)
+        # all_degs=all_degs[2:363]
         for i in all_degs:
             line=i.split(",")
-            if line[0]: # if not empty string
+            if line[0] != '' and line[0]>='0' and line[0]<='359': # if not empty string
+                print(line)
+                if len(line) > 1:
+                    distance=int(line[1],10)
+                    if distance==0:
+                        distance==0
+                    else:
+                        distance=distance-self.offset
+                    if line[2] != '':
+                        l2=int(line[2])
+                    if line[3] != '':
+                        l3 = int(line[3])
+                    new_read=[int(line[0]),distance,l2,l3]
+                    results.append(new_read)
+        return results
+    def deg_scan(self,s,deg:int):
+        # returns a list of readings 
+        response=s.reset_input_buffer()
+        s.write(b'GetLDSScan\r\n')
+        time.sleep(1)
+        response=s.read(10000)
+        response=response.decode("utf-8")
+        all_degs=response.splitlines()
+        # print(all_degs)
+        # all_degs=all_degs[2:363]
+        for i in all_degs:
+            line=i.split(",")
+            if line[0] != '' and line[0]==str(deg):
                 #print(line)
                 if len(line) > 1:
                     distance=int(line[1],10)
@@ -55,31 +83,12 @@ class lds():
                         distance==0
                     else:
                         distance=distance-self.offset
-                    distance=str(distance)
-                    new_read=[int(line[0]),int(distance),int(line[2]),int(line[3])]
-                    results.append(new_read)
-        return results
-    def deg_scan(self,s,deg:int):
-        # returns the reading at a specified degree
-        s.reset_input_buffer()
-        s.write(b'GetLDSScan\r\n')
-        time.sleep(1)
-        response=s.read(10000)
-        response=response.decode("utf-8")
-        all_degs=response.splitlines()
-        for i in all_degs:
-            # make sure the types get matched properly here
-            # need to parse into fields to match the degree field
-            line=i.split(",")
-            if line[0]==str(deg):
-                distance=int(line[1],10)
-                if distance==0:
-                    distance==0
-                else:
-                    distance=distance-self.offset
-                new_read=reading(line[0],distance,line[2],line[3])
-                #print(vars(new_read))
-                return new_read
+                    if line[2] != '':
+                        l2=int(line[2])
+                    if line[3] != '':
+                        l3 = int(line[3])
+                    new_read=reading(int(line[0]), distance, l2, l3)
+                    return new_read
         return None
     def stop(self,s):
         s.write(b'SetLDSRotation Off\r\n')
