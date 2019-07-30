@@ -18,7 +18,7 @@ class trial_counter():
         self.num=num
 
 global z_run
-# used to create a pointer
+# used to create a pointer which can be shared/updated between two different modules
 z_run=trial_counter(0)
 
 class test_result:
@@ -93,6 +93,7 @@ class test:
     def convert_to_excel(self,results,file_name):
         wb=Workbook()
         j=1
+        # might not need this once the information gets properly parsed
         bot_ver=self.get_bot_info()
         p=''
         for i in bot_ver:

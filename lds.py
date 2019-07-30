@@ -99,9 +99,24 @@ class lds():
         time.sleep(1)
         response=s.read(10000)
         response=response.decode("utf-8")
-        # need to parse for certain information here
-        
-        return response
+        # need to parse for important information here as requested by Pawel
+        # irrelevant data is removed
+        a=response.split("LCD Panel,0,0,0,",1)
+        b=a[1].split("Locale",1)
+        chunk1=b[0]
+        c=b[1].split("MAG_SENSOR_ORIG",1)
+        d=c[1].split("NTP URL",1)
+        chunk2=d[0]
+        e=d[1].split("Software Git")
+        e[1]="Software Git"+e[1]
+        f=e[1].split("UI Name")
+        chunk3=f[0]
+
+        parsed_data=chunk1+chunk2+chunk3
+
+        parsed_data=parsed_data.splitlines()
+
+        return parsed_data
 
 if __name__=="__main__":
     s=serial.Serial(serial_port,timeout=3)
