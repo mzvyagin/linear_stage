@@ -142,9 +142,9 @@ class test:
         if A < self.offset:
             print ("Error: A value is too small")
             return None
-        if B > self.stage.end_of_stage:
+        if B > 6000:
             print("Error: B value is too large")
-        if step<=self.offset or step>self.stage.end_of_stage:
+        if step<=0 or step>6000:
             print("Error: invalid step value")
             return None
         if B < A:

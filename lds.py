@@ -49,14 +49,14 @@ class lds():
         for i in all_degs:
             line=i.split(",")
             if line[0] != '' and line[0].isnumeric()==True and int(line[0])>=0 and int(line[0])<=359:
-                print(line[0])
+                #print(line[0])
                 if len(line) > 1:
-                    distance=int(line[1],10)
-                    if line[2] != '':
+                    distance=int(line[1])
+                    if line[2] != None:
                         l2=int(line[2])
                     else:
                         l2=None
-                    if line[3] != '':
+                    if line[3] != None:
                         l3 = int(line[3])
                     else:
                         l3=None
@@ -65,7 +65,7 @@ class lds():
 
         return results
     def deg_scan(self,s,deg:int):
-        # returns a list of readings 
+        # this call gets all degrees
         response=s.reset_input_buffer()
         s.write(b'GetLDSScan\r\n')
         time.sleep(1)
@@ -76,12 +76,12 @@ class lds():
             line=i.split(",")
             if line[0] != '' and line[0].isnumeric() ==True and line[0]==str(deg):
                 if len(line) > 1:
-                    distance=int(line[1],10)
-                    if line[2] != '':
+                    distance=int(line[1])
+                    if line[2] != None:
                         l2=int(line[2])
                     else:
                         l2=None
-                    if line[3] != '':
+                    if line[3] != None:
                         l3 = int(line[3])
                     else:
                         l3=None

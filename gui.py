@@ -59,7 +59,7 @@ def sys_params():
   # None is used here because this is numeric entry
   if off!=None:
     test_object.offset=off
-    test_object.laser.offset=off
+    test_object.stage.offset=off
     #print(test_object.offset)
   global com
   com=app.getEntry("COM Port: ")
@@ -189,8 +189,8 @@ app.addButton("Auto Test",lambda:auto_test_wrapper(),row=8)
 
 def set_white_values():
   app.setEntry("Desired Degree: ","0")
-  app.setEntry("Starting Distance A: ","0")
-  app.setEntry("Ending Distance B: ","5975")
+  app.setEntry("Starting Distance A: ","500")
+  app.setEntry("Ending Distance B: ","6000")
   app.setEntry("Step Interval: ","25")
   app.setEntry("Readings per Interval: ","1")
   app.setEntry("Custom File Name: ","whitecard")
@@ -198,8 +198,8 @@ def set_white_values():
 
 def set_grey_values():
   app.setEntry("Desired Degree: ","0")
-  app.setEntry("Starting Distance A: ","0")
-  app.setEntry("Ending Distance B: ","3000")
+  app.setEntry("Starting Distance A: ","500")
+  app.setEntry("Ending Distance B: ","3500")
   app.setEntry("Step Interval: ","25")
   app.setEntry("Readings per Interval: ","1")
   app.setEntry("Custom File Name: ","greycard")

@@ -9,7 +9,7 @@ class stage:
         self.conversion=conversion
         # position value for the far end of the stage
         # this is for the 6m linear stage, change for another stage
-        self.end_of_stage=conversion*(-5975+offset)
+        self.end_of_stage=conversion*(-5975-offset)
         # close end of the stage position = 0
         self.offset=offset
     # initializes the TCP connection
@@ -26,7 +26,7 @@ class stage:
             r=m.recv(1024)
         except:
             # print("pos exception")
-            time.sleep(2)
+            time.sleep(5)
             r=m.recv(1024)
         # r=r.encode("utf-8")
         l=r.splitlines()
@@ -63,10 +63,10 @@ class stage:
         # get the original position
         start=self.get_pos(m)
         # calculate the position to move
-        p=self.conversion*(dist-self.offset)*-1
+        p=self.conversion*(dist)*-1
         end=start+p
         # need to check to make sure final position isn't off the stage
-        if end<=0 and end>=((self.end_of_stage-self.offset)*self.conversion):
+        if end<=0 and end>=(-5975*self.conversion):
             m.send(b'MR %d\r\n'%p)
             #pos=None
             #while pos!=end:
@@ -96,7 +96,7 @@ class stage:
             r=m.recv(1024)
         except:
             # print("moving exception")
-            time.sleep(2)
+            time.sleep(5)
             r=m.recv(1024)
         l=r.splitlines()
         moving=int(l[-1],10)
