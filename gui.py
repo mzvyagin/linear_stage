@@ -58,6 +58,7 @@ def sys_params():
   off=app.getEntry("Offset (default is 485): ")
   # None is used here because this is numeric entry
   if off!=None:
+    print("Offset changed")
     test_object.offset=off
     test_object.stage.offset=off
     #print(test_object.offset)
@@ -65,7 +66,7 @@ def sys_params():
   com=app.getEntry("COM Port: ")
   # "" is used here because this is a general entry
   if com!="":
-    print("COM Changed")
+    print("COM port changed")
     test_object.stop_laser()
     test_object.serial.close()
     test_object.serial=lds.create_session(com)
@@ -174,7 +175,7 @@ def set_flag():
 
 def auto_test_wrapper():
   app.startSubWindow("Auto Test Running",modal=True)
-  app.addLabel("The auto test is currently running. To stop the test please hit the quit button below. Note that any collected data may be lost.")
+  app.addLabel("The auto test is currently running. Do not close this window while test is running. To stop the test please hit the quit button below. Note that any collected data may be lost.")
   app.addButton("Quit Auto Test",lambda:set_flag())
   app.stopSubWindow()
   app.showSubWindow("Auto Test Running")
