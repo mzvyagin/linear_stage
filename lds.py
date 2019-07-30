@@ -19,7 +19,8 @@ def create_session(s_port):
     # need to call this command otherwise not permitted to make serial connection - only on Linux
     #subprocess.call(['sudo chmod 666 /dev/ttyACM0'],shell=True)
     #initialize the session
-    s=serial.Serial(s_port,timeout=3)
+    # timeout of 3 seconds
+    s=serial.Serial(s_port,timeout=10)
     return s
 def close_session(s):
     s.close()
