@@ -4,18 +4,20 @@ import socket
 import time
 
 class stage:
-    def __init__(self,conversion:int):
-        # this is the number of steps that is equal to 1 mm
+    def __init__(self,conversion:int,offset:int):
+        # this is the number of motor steps that is equal to 1 mm
         self.conversion=conversion
         # position value for the far end of the stage
         # this is for the 6m linear stage, change for another stage
-        self.end_of_stage=conversion*-6000
+        self.end_of_stage=conversion*(-5975+offset)
         # close end of the stage position = 0
+        self.offset=offset
     # initializes the TCP connection
     def connect(self):
         m=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        # these values won't change for the 6m linear stage but will be different for other instruments
         m.connect(("192.168.33.1",503))
-        m.settimeout(3)
+        m.settimeout(15)
         return m
     def get_pos(self,m):
         # request and recieve position in motor steps, not millimeters
@@ -24,7 +26,7 @@ class stage:
             r=m.recv(1024)
         except:
             # print("pos exception")
-            time.sleep(.3)
+            time.sleep(2)
             r=m.recv(1024)
         # r=r.encode("utf-8")
         l=r.splitlines()
@@ -32,22 +34,23 @@ class stage:
         # convert string to a decimal number
         # remove this print statement once you know it's isolating the right value
         pos=int(l[-1],10)
-        # print(pos)
         return pos
     def stage_pos(self,m):
         # returns the stage position in millimeters
+        # offset calculated using laser tool is added to this position
         steps=self.get_pos(m)
         if steps==0:
-            return 0
+            return self.offset
         else:
             real=steps/(self.conversion*-1)
+            real=real+self.offset
             return round(real)
     # move the stage to an absolute position from home
     def move_ab(self,m,dist:int):
         # calculate the position:
-        p=self.conversion*dist*-1
+        p=self.conversion*(dist-self.offset)*-1
         # need to check to make sure position isn't off the stage
-        if p<=0 and p>=self.end_of_stage:
+        if p<=0 and p>=((self.end_of_stage-self.offset)*self.conversion):
             m.send(b'MA %d\r\n'%p)
             #pos=None
             #while pos!=p:
@@ -60,10 +63,10 @@ class stage:
         # get the original position
         start=self.get_pos(m)
         # calculate the position to move
-        p=self.conversion*dist*-1
+        p=self.conversion*(dist-self.offset)*-1
         end=start+p
         # need to check to make sure final position isn't off the stage
-        if end<=0 and end>=self.end_of_stage:
+        if end<=0 and end>=((self.end_of_stage-self.offset)*self.conversion):
             m.send(b'MR %d\r\n'%p)
             #pos=None
             #while pos!=end:
@@ -93,7 +96,7 @@ class stage:
             r=m.recv(1024)
         except:
             # print("moving exception")
-            time.sleep(.3)
+            time.sleep(2)
             r=m.recv(1024)
         l=r.splitlines()
         moving=int(l[-1],10)

@@ -27,8 +27,6 @@ def close_session(s):
     return None
 class lds():
     # this class relies on an already created session object (see above)
-    def __init__(self,offset):
-        self.offset=offset
     def start(self,s):
         # starts the LDS
         s.write(b'TestMode On\r\n')
@@ -53,10 +51,6 @@ class lds():
                 # print(line)
                 if len(line) > 1:
                     distance=int(line[1],10)
-                    if distance==0:
-                        distance==0
-                    else:
-                        distance=distance-self.offset
                     if line[2] != '':
                         l2=int(line[2])
                     if line[3] != '':
@@ -80,10 +74,6 @@ class lds():
                 #print(line)
                 if len(line) > 1:
                     distance=int(line[1],10)
-                    if distance==0:
-                        distance==0
-                    else:
-                        distance=distance-self.offset
                     if line[2] != '':
                         l2=int(line[2])
                     if line[3] != '':

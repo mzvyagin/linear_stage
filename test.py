@@ -34,14 +34,14 @@ class test:
     def __init__(self,conversion:int,offset:int):
         self.conversion=conversion
         self.offset=offset
-        self.stage=stage.stage(self.conversion)
+        self.stage=stage.stage(self.conversion,self.offset)
         time.sleep(1)
         # initialize connection to motor (TCP)
         self.motor=self.stage.connect()
         time.sleep(1)
         self.serial=lds.create_session(serial_port)
         time.sleep(1)
-        self.laser=lds.lds(self.offset)
+        self.laser=lds.lds()
         time.sleep(1)
         # start the laser spinning
         self.laser.start(self.serial)
@@ -50,24 +50,6 @@ class test:
         self.serial.write(b'GetLDSScan\r\n')
         time.sleep(1)
     
-    def system_init(self):
-        # initialize stage object
-        self.stage=stage.stage(self.conversion)
-        time.sleep(1)
-        # initialize connection to motor (TCP)
-        self.motor=self.stage.connect()
-        time.sleep(1)
-        self.serial=lds.create_session()
-        time.sleep(1)
-        self.laser=lds.lds(self.offset)
-        time.sleep(1)
-        # start the laser spinning
-        self.laser.start(self.serial)
-        time.sleep(1)
-        # do a full scan
-        self.serial.write(b'GetLDSScan\r\n')
-        time.sleep(1)
-        return 1
 
 
     def start_laser(self):
@@ -100,7 +82,7 @@ class test:
 
 
     def home(self):
-        self.stage.move_ab(self.motor,0)
+        self.stage.move_ab(self.motor,self.offset)
         time.sleep(1)
         mflag=self.stage.get_moving(self.motor)
         # pause the program while the motor is still moving
@@ -156,12 +138,12 @@ class test:
         if deg>359 or deg<0:
             print("Error:invalid degree parameter")
             return None
-        if A < 0:
+        if A < self.offset:
             print ("Error: A value is too small")
             return None
-        if B > 5975:
+        if B > self.stage.end_of_stage:
             print("Error: B value is too large")
-        if step<=0 or step>5975:
+        if step<=self.offset or step>self.stage.end_of_stage:
             print("Error: invalid step value")
             return None
         if B < A:
