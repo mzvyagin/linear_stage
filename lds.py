@@ -40,23 +40,29 @@ class lds():
         s.write(b'GetLDSScan\r\n')
         time.sleep(1)
         response=s.read(10000)
-        response=response.decode("utf-8")
+        response=response.decode("utf-8",errors="ignore")
+        #print(response)
         results=[]
         all_degs=response.splitlines()
         # print(all_degs)
         # all_degs=all_degs[2:363]
         for i in all_degs:
             line=i.split(",")
-            if line[0] != '' and line[0]>='0' and line[0]<='359': # if not empty string
-                # print(line)
+            if line[0] != '' and line[0].isnumeric()==True and int(line[0])>=0 and int(line[0])<=359:
+                print(line[0])
                 if len(line) > 1:
                     distance=int(line[1],10)
                     if line[2] != '':
                         l2=int(line[2])
+                    else:
+                        l2=None
                     if line[3] != '':
                         l3 = int(line[3])
+                    else:
+                        l3=None
                     new_read=[int(line[0]),distance,l2,l3]
                     results.append(new_read)
+
         return results
     def deg_scan(self,s,deg:int):
         # returns a list of readings 
@@ -66,18 +72,19 @@ class lds():
         response=s.read(10000)
         response=response.decode("utf-8")
         all_degs=response.splitlines()
-        # print(all_degs)
-        # all_degs=all_degs[2:363]
         for i in all_degs:
             line=i.split(",")
-            if line[0] != '' and line[0]==str(deg):
-                #print(line)
+            if line[0] != '' and line[0].isnumeric() ==True and line[0]==str(deg):
                 if len(line) > 1:
                     distance=int(line[1],10)
                     if line[2] != '':
                         l2=int(line[2])
+                    else:
+                        l2=None
                     if line[3] != '':
                         l3 = int(line[3])
+                    else:
+                        l3=None
                     new_read=reading(int(line[0]), distance, l2, l3)
                     return new_read
         return None
@@ -92,6 +99,8 @@ class lds():
         time.sleep(1)
         response=s.read(10000)
         response=response.decode("utf-8")
+        # need to parse for certain information here
+        
         return response
 
 if __name__=="__main__":
