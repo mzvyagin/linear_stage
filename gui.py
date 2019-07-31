@@ -18,6 +18,9 @@ global e
 global lds_reads
 global stage_reads
 
+global in_auto
+in_auto=False
+
 conv=2556.7
 off=485
 test_object=test.test(conv,off)
@@ -146,6 +149,8 @@ app.addLabelEntry("Number of Runs: ",row=7)
 def gui_auto_test():
   global test_object
   global most_recent_test
+  global in_auto
+  in_auto=True
   d=int(app.getEntry("Desired Degree: "))
   a=int(app.getEntry("Starting Distance A: "))
   b=int(app.getEntry("Ending Distance B: "))
@@ -165,6 +170,7 @@ def gui_auto_test():
   t.join()
   app.destroySubWindow("Auto Test Running")
   e.clear()
+  in_auto=False
   return
 
 # this e is initialized in the test module
@@ -221,11 +227,14 @@ app.startFrame("RIGHT",row=0,column=2)
 # widget to show the current position of the linear stage
 app.addLabel("Current Stage Position","Current Stage Position",row=0,column=0)
 def update_pos():
-  try:
-    pos= test_object.stage.stage_pos(test_object.motor)
-    app.setLabel("Current Stage Position","Current Stage Position : "+str(pos)+" (mm)")
-  except:
-    pass
+  if in_auto==False:
+    try:
+      pos= test_object.stage.stage_pos(test_object.motor)
+      app.setLabel("Current Stage Position","Current Stage Position : "+str(pos)+" (mm)")
+    except:
+      pass
+  else:
+    app.setLabel("Current Stage Position","Current Stage Position : IN AUTO TEST")
 
 
 app.addLabel("Latest Stage Reading : ","Latest Stage Reading : ",row=1,column=0)

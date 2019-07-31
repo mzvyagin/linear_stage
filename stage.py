@@ -17,17 +17,20 @@ class stage:
         m=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         # these values won't change for the 6m linear stage but will be different for other instruments
         m.connect(("192.168.33.1",503))
-        m.settimeout(15)
+        time.sleep(.1)
+        #m.settimeout(15)
         return m
     def get_pos(self,m):
         # request and recieve position in motor steps, not millimeters
         m.send(b'PR P\r\n')
         try:
-            r=m.recv(1024)
+            r=m.recv(128)
+            time.sleep(.1)
         except:
-            # print("pos exception")
+            print("pos exception")
             time.sleep(5)
-            r=m.recv(1024)
+            r=m.recv(128)
+            time.sleep(.1)
         # r=r.encode("utf-8")
         l=r.splitlines()
         # return the last line of the response (in case there's other things in buffer)
@@ -93,11 +96,13 @@ class stage:
         # gets the moving flag to see if stage is still moving
         m.send(b'PR MV\r\n')
         try:
-            r=m.recv(1024)
+            r=m.recv(128)
+            time.sleep(.1)
         except:
-            # print("moving exception")
+            print("moving exception")
             time.sleep(5)
-            r=m.recv(1024)
+            r=m.recv(128)
+            time.sleep(.1)
         l=r.splitlines()
         moving=int(l[-1],10)
         return moving
