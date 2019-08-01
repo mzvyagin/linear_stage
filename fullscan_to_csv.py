@@ -5,7 +5,7 @@ import csv
 
 l=lds.lds()
 
-s=lds.create_session('COM4')
+s=lds.create_session('COM5')
 
 l.start(s)
 

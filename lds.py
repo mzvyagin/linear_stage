@@ -52,11 +52,11 @@ class lds():
                 #print(line[0])
                 if len(line) > 1:
                     distance=int(line[1])
-                    if line[2] != None:
+                    if line[2] != None and line[2].isnumeric()==True:
                         l2=int(line[2])
                     else:
                         l2=None
-                    if line[3] != None:
+                    if line[3] != None and line[3].isnumeric()==True:
                         l3 = int(line[3])
                     else:
                         l3=None
@@ -77,11 +77,11 @@ class lds():
             if line[0] != '' and line[0].isnumeric() ==True and line[0]==str(deg):
                 if len(line) > 1:
                     distance=int(line[1])
-                    if line[2] != None:
+                    if line[2] != None and line[2].isnumeric()==True:
                         l2=int(line[2])
                     else:
                         l2=None
-                    if line[3] != None:
+                    if line[3] != None and line[3].isnumeric()==True:
                         l3 = int(line[3])
                     else:
                         l3=None
