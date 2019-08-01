@@ -22,7 +22,7 @@ global in_auto
 in_auto=False
 
 conv=2556.7
-off=485
+off=493
 test_object=test.test(conv,off)
 
 global most_recent_test
@@ -45,7 +45,7 @@ app.ttkStyle.configure("TButton",font=20)
 
 app.addLabel("params","Input Parameters for the System")
 app.addLabelNumericEntry("Conversion (default is 2556.7): ")
-app.addLabelNumericEntry("Offset (default is 485): ")
+app.addLabelNumericEntry("Offset (default is 493): ")
 app.addLabelEntry("COM Port: ")
 
 def sys_params():
@@ -58,7 +58,7 @@ def sys_params():
     test_object.stage.conversion=conv
     #print(test_object.conversion)
   global off
-  off=app.getEntry("Offset (default is 485): ")
+  off=app.getEntry("Offset (default is 493): ")
   # None is used here because this is numeric entry
   if off!=None:
     print("Offset changed")
@@ -112,8 +112,13 @@ def test_scan():
   app.deleteAllTableRows("Scan Results")
   # perform the scan and parsing
   results=test_object.laser.full_scan(test_object.serial)
+  if results==None:
+    results=test_object.laser.full_scan(test_object.serial)
   # add the results to the table
-  app.addTableRows("Scan Results",results)
+  if results != None:
+    app.addTableRows("Scan Results",results)
+  else:
+    print("Error in scanning, please re-run the scan.")
 
 app.addButton("Test Laser Scan",lambda:test_scan())
 

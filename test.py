@@ -21,6 +21,10 @@ global z_run
 # used to create a pointer which can be shared/updated between two different modules
 z_run=trial_counter(0)
 
+
+global offset
+
+
 class test_result:
     def __init__(self,deg,dist,inten,error,act_dist):
         self.deg=deg
@@ -93,7 +97,12 @@ class test:
     def convert_to_excel(self,results,file_name):
         wb=Workbook()
         j=1
-        # might not need this once the information gets properly parsed
+        # append the degree offset
+        global offset
+        wb.active.append(["Calculated Degree Offset"])
+        wb.active.append([offset])
+        wb.active.append([])
+        wb.active.append([])
         bot_ver=self.get_bot_info()
         p=''
         for i in bot_ver:
@@ -161,6 +170,18 @@ class test:
         if num_of_ints.is_integer() is not True:
             print("Error: interval doesn't give an equal spacing")
             return None
+
+
+        # calculate the degree ofset before anything else:
+        # the function definition prints it to the command line as well
+        self.stage.move_ab(self.motor,self.offset)
+        mflag=self.stage.get_moving(self.motor)
+        while mflag!=0:
+            time.sleep(1)
+            mflag=self.stage.get_moving(self.motor)
+        # calculate the offset at the closest possible distance 
+        global offset
+        offset=self.laser.calculate_offset(self.serial)
 
         # counter for number of runs
         full_results=[]

@@ -3,6 +3,7 @@
 import serial
 import time
 import subprocess
+import numpy
 
 class reading:
     def __init__(self,deg,dist,inten,error):
@@ -50,7 +51,7 @@ class lds():
             line=i.split(",")
             if line[0] != '' and line[0].isnumeric()==True and int(line[0])>=0 and int(line[0])<=359:
                 #print(line[0])
-                if len(line) > 1:
+                if len(line) == 4:
                     distance=int(line[1])
                     if line[2] != None and line[2].isnumeric()==True:
                         l2=int(line[2])
@@ -62,6 +63,9 @@ class lds():
                         l3=None
                     new_read=[int(line[0]),distance,l2,l3]
                     results.append(new_read)
+                # sometimes the strings get messed up and index errors get thrown, need to restart the scan
+                else:
+                    return None
 
         return results
     def deg_scan(self,s,deg:int):
@@ -70,7 +74,7 @@ class lds():
         s.write(b'GetLDSScan\r\n')
         time.sleep(1)
         response=s.read(10000)
-        response=response.decode("utf-8")
+        response=response.decode("utf-8",errors="ignore")
         all_degs=response.splitlines()
         for i in all_degs:
             line=i.split(",")
@@ -117,6 +121,71 @@ class lds():
         parsed_data=parsed_data.splitlines()
 
         return parsed_data
+
+    def calculate_offset(self,s):
+        # get a full scan packet
+        scan=self.full_scan(s)
+        # check the scan for success
+        counter=0
+        # try to scan ten times, should work the first time but this is a failsafe 
+        while scan==None and counter<10:
+            scan=self.full_scan(s)
+            counter=counter+1
+        
+        if scan==None and counter>=10:
+            return None
+
+        # initialize lists
+        x=[]
+        y=[]
+
+        # pull data from the first ten degrees of the list
+        for i in range(0,11):
+            entry=scan[i]
+            #print(entry)
+            # check error code and distance
+            if entry[3] == 0 and 450 <= entry[1] <= 525:
+                # append degree 
+                x.append(i)
+                # append distance
+                y.append(entry[1])
+                #print(entry[1])
+            else:
+                print("Degree %d lost because of error or distance not between 450 and 525"%i)
+
+        # pull data from the last ten degrees of list
+        deg=-10
+        for i in range(350,360):
+            entry=scan[i]
+            #print(entry)
+            # check error code and distance 
+            if entry[3] == 0 and 450 <= entry[1] <= 525:
+                # append degree 
+                x.append(deg)
+                # append distance
+                y.append(entry[1])
+                #print(entry[1])
+            else:
+                print("Degree %d lost because of error or distance not between 450 and 525"%deg)
+            # always increase the degree number    
+            deg=deg+1
+
+        # calculate the quadratic fit using the x and y arrays 
+        r=numpy.polynomial.polynomial.Polynomial.fit(x,y,2)
+        # extract coefficients
+        coeff=r.convert().coef
+
+        m=(-1*coeff[1])/(2*coeff[2])
+
+        #print(coeff)
+        print("This is the calculated true zero degree using a quadratic fit:")
+        print(m)
+
+        return m
+
+
+
+
 
 if __name__=="__main__":
     s=serial.Serial(serial_port,timeout=3)
