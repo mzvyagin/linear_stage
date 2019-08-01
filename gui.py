@@ -226,6 +226,15 @@ def open_csv():
   os.startfile(most_recent_test)
 
 app.addButton("Open Most Recent Test Results",lambda:open_csv(),row=11)
+
+# this is for calculating the degree offset outside of the auto test
+def get_offset():
+  global test_object
+  r=test_object.offset_test()
+  app.setEntry("Calculate Degree Offset: ",str(r))
+
+app.addLabelEntry("Calculate Degree Offset: ",lambda:get_offset(),row=12)
+
 app.stopFrame()
 app.startFrame("RIGHT",row=0,column=2)
 

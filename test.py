@@ -135,6 +135,17 @@ class test:
                 results_writer.writerow(i)
             test_results.close()
 
+    # calculate the offset at the closest possible distance 
+    def offset_test(self):
+        self.stage.move_ab(self.motor,self.offset)
+        mflag=self.stage.get_moving(self.motor)
+        while mflag!=0:
+            time.sleep(1)
+            mflag=self.stage.get_moving(self.motor)
+        global offset
+        offset=self.laser.calculate_offset(self.serial)
+        
+
     # automated test
     def auto_test(self,deg,A,B,step,readings,runs,file_name):
         global latest_lds_read
@@ -174,14 +185,7 @@ class test:
 
         # calculate the degree ofset before anything else:
         # the function definition prints it to the command line as well
-        self.stage.move_ab(self.motor,self.offset)
-        mflag=self.stage.get_moving(self.motor)
-        while mflag!=0:
-            time.sleep(1)
-            mflag=self.stage.get_moving(self.motor)
-        # calculate the offset at the closest possible distance 
-        global offset
-        offset=self.laser.calculate_offset(self.serial)
+        self.offset_test()
 
         # counter for number of runs
         full_results=[]
