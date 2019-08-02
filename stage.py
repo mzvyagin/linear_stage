@@ -61,6 +61,7 @@ class stage:
                 #time.sleep(1)
             return True
         else:
+            print("Invalid position for absolute move")
             return False
     def move_rel(self,m,dist:int):
         # get the original position
@@ -77,6 +78,7 @@ class stage:
                 #time.sleep(1)
             return True
         else:
+            print("Invalid position for relative move")
             return False
     def get_echo(self,m):
         m.send(b'PR EM\r\n')

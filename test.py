@@ -144,6 +144,7 @@ class test:
             mflag=self.stage.get_moving(self.motor)
         global offset
         offset=self.laser.calculate_offset(self.serial)
+        return offset
         
 
     # automated test
